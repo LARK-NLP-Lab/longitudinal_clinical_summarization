@@ -6,17 +6,21 @@ import argparse
 from tqdm import tqdm
 from huggingface_hub import login
 
+# fix this use uncertainty cuda setup
 torch.cuda.set_device(0)
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--model', type=str)
     parser.add_argument('--inputdir', type=str, default='hand_selected/24h', help='input directory')
-    parser.add_argument('--outputdir', type=str, default='mistral_summaries', help='output directory')
+    # maybe remove outputdir arg and just create results_{model} folder
+    parser.add_argument('--outputdir', type=str, help='output directory')
     args = parser.parse_args()
     return args
 
 
 def model_setup():
+    # fix this take model arg
     login()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -50,6 +54,7 @@ def main():
     args = parse_args()
     input_folder = args.inputdir
     output_folder = args.outputdir
+    model_name = args.model
 
     model, tokenizer, device = model_setup()
     role = """
