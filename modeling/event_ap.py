@@ -6,19 +6,31 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from tqdm import tqdm
 import gc
 from huggingface_hub import login
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
-EE_MODEL_NAME = 'meta-llama/Llama-2-13b-chat-hf'
 EE_MAX_TOKENS = 2000  
 
-def model_setup_event_extraction():
+AVAILABLE_MODELS = {'mistral': 'mistralai/Mistral-7B-Instruct-v0.1',
+                'qwen': 'Qwen/Qwen2.5-VL-7B-Instruct',
+                'deepseek': 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B',
+                'llama3': 'meta-llama/Llama-3.1-8B-Instruct',
+                'llama2': 'meta-llama/Llama-2-13b-chat-hf'}
+
+
+def model_setup_event_extraction(model_selection):
+    login()
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     quantization_config = BitsAndBytesConfig(load_in_8bit=True)
+
+    model_name = AVAILABLE_MODELS[model_selection]
+
     model = AutoModelForCausalLM.from_pretrained(
-        EE_MODEL_NAME,
+        model_name,
         quantization_config=quantization_config,
         device_map="auto"
     )
-    tokenizer = AutoTokenizer.from_pretrained(EE_MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
     print("Event extraction model and tokenizer loaded")
     return model, tokenizer
 
@@ -85,12 +97,15 @@ Response Format:
     return events_extracted
 
 
-def model_setup_generation():
-    
+def model_setup_generation(model_selection):
+    login()
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Generation device:", device)
     
-    gen_model_name = EE_MODEL_NAME
+    model_name = AVAILABLE_MODELS[model_selection]
+
+    gen_model_name = model_name
     quantization_config = BitsAndBytesConfig(load_in_8bit=True)
     
     model = AutoModelForCausalLM.from_pretrained(
@@ -111,10 +126,10 @@ def df2chron_str(df: pd.DataFrame):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inputdir', type=str, default='/data/shiyue/PS/progress_note/input_data/input/', help='input directory')
-    parser.add_argument('--outputdir', type=str, default='/data/shiyue/PS/EE/pn/llama2/', help='output directory')
+    parser.add_argument('--inputdir', type=str, default='data/AP/input', help='input directory')
     parser.add_argument('--method', type=int, default=-1, help='PN generation method')
     parser.add_argument('--setting', type=str, default='gt', help='Experimental setting, gt or gen')
+    parser.add_argument('--model', type=str, help='model name, choose from mistral, qwen, deepseek, llama3, llama2')    
     args = parser.parse_args()
     return args
 
@@ -122,8 +137,14 @@ def main():
     args = parse_args()
     input_folder = args.inputdir
     setting = args.setting
+    model_selection = args.model
+
+    output_folder = f'data/AP/generated/EE/{model_selection}/{setting}'
+    os.makedirs(output_folder, exist_ok=True) 
+
     methods_to_run = [-1, 1, 2] 
 
+    #create directory for each method
     for method in methods_to_run:
         print(f"\n=== Running for method {method} under setting '{setting}' ===")
         
@@ -134,9 +155,9 @@ def main():
         output_folder = os.path.join(args.outputdir, f"{setting}_setting", method_folder)
         os.makedirs(output_folder, exist_ok=True)
 
-        gen_model, gen_tokenizer, device = model_setup_generation()
+        gen_model, gen_tokenizer, device = model_setup_generation(args.model)
         global ee_model, ee_tokenizer
-        ee_model, ee_tokenizer = model_setup_event_extraction()
+        ee_model, ee_tokenizer = model_setup_event_extraction(args.model)
 
         instruction1 = """
         You are an experienced ICU clinician tasked with reviewing the following EHR data and generating concise Assessment and Plan sections of a clinical progress note. Use professional and medically appropriate language to provide a summary of the patient’s current status and the recommended course of action.    

@@ -320,8 +320,8 @@ def main():
 
     admission_ids = icu_df['HADM_ID'].to_list()
 
-    output_dir = 'discharge_sum/input'
-    gt_dir = 'discharge_sum/gold'
+    output_dir = 'data/DS/input'
+    gt_dir = 'data/DS/gold'
     
     # for admission_id in tqdm(batch_ids):
     for admission_id in tqdm(admission_ids):

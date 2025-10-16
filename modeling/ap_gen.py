@@ -5,28 +5,35 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from tqdm import tqdm
 from huggingface_hub import login
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
 
 torch.cuda.set_device(0)
 
- 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inputdir', type=str, default='input_four', help='input directory')
-    parser.add_argument('--outputdir', type=str, default='sample_output', help='output directory')
-    parser.add_argument('--method', type=int, default=-1, help='PN generation method')
+    parser.add_argument('--inputdir', type=str, default='data/AP/input', help='input directory')
+    parser.add_argument('--method', type=int, default=-1, help='AP generation method')
     parser.add_argument('--setting', type=str, default='gt', help='Experimental setting, gt or gen')
+    parser.add_argument('--model', type=str, help='model name, choose from mistral, qwen, deepseek, llama3, llama2')
     args = parser.parse_args()
     return args
 
 
-def model_setup():
+def model_setup(model_selection: str):
     login()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('Device: ', device)
 
-    model_name = 'mistralai/Mistral-7B-Instruct-v0.1'
+    AVAILABLE_MODELS = {'mistral': 'mistralai/Mistral-7B-Instruct-v0.1',
+                        'qwen': 'Qwen/Qwen2.5-VL-7B-Instruct',
+                        'deepseek': 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B',
+                        'llama3': 'meta-llama/Llama-3.1-8B-Instruct',
+                        'llama2': 'meta-llama/Llama-2-13b-chat-hf'}
+
+    model_name = AVAILABLE_MODELS[model_selection]
 
     quantization_config = BitsAndBytesConfig(load_in_8bit=True)
 
@@ -57,8 +64,12 @@ def main():
     output_folder = args.outputdir
     method = args.method
     setting = args.setting
+    model_selection = args.model
 
-    model, tokenizer, device = model_setup()
+    output_folder = f'data/AP/generated/DG/{model_selection}/{setting}/{method}'
+    os.makedirs(output_folder, exist_ok=True) 
+
+    model, tokenizer, device = model_setup(model_selection)
     
     instruction1 = """
     You are an experienced ICU clinician tasked with reviewing the following EHR data and generating concise Assessment and Plan sections of a clinical progress note. Use professional and medically appropriate language to provide a summary of the patient’s current status and the recommended course of action.    

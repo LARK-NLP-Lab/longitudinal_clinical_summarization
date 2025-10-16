@@ -247,8 +247,8 @@ def main():
     lab_items = pd.read_csv('data/MIMIC-III/D_LABITEMS.csv')
     chart_items = pd.read_csv('data/MIMIC-III/D_ITEMS.csv')
 
-    output_dir = 'assessment_plan/input'
-    gt_dir = 'assessment_plan/gold'
+    output_dir = 'data/AP/input'
+    gt_dir = 'data/AP/gold'
 
     # get list of admissions that contain physician progress notes - note all do
     prog_ids = prog['HADM_ID'].unique()

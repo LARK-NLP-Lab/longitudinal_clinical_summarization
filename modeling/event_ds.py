@@ -6,29 +6,39 @@ import argparse
 from tqdm import tqdm
 import gc
 from huggingface_hub import login
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
-
-EE_MODEL_NAME = 'meta-llama/Meta-Llama-3-8B-Instruct'
 EE_MAX_TOKENS = 2000
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inputdir', type=str, default='/data/shiyue/PS/EE/ds/input/', help='input directory')
-    parser.add_argument('--outputdir', type=str, default='/data/shiyue/PS/EE/ds/output/llama3/', help='output directory')
+    parser.add_argument('--inputdir', type=str, default='data/DS/input', help='input directory')
+    parser.add_argument('--model', type=str, help='model name, choose from mistral, qwen, deepseek, llama3, llama2')    
     args = parser.parse_args()
     return args
 
-def model_setup():
+def model_setup(model_selection: str):
+    login()
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print('Device: ', device)
 
+    AVAILABLE_MODELS = {'mistral': 'mistralai/Mistral-7B-Instruct-v0.1',
+                    'qwen': 'Qwen/Qwen2.5-VL-7B-Instruct',
+                    'deepseek': 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B',
+                    'llama3': 'meta-llama/Llama-3.1-8B-Instruct',
+                    'llama2': 'meta-llama/Llama-2-13b-chat-hf'}
+    
+    model_name = AVAILABLE_MODELS[model_selection]
+
     quantization_config = BitsAndBytesConfig(load_in_8bit=True)
     model = AutoModelForCausalLM.from_pretrained(
-        EE_MODEL_NAME,
+        model_name,
         quantization_config=quantization_config,
         device_map="auto"
     )
-    tokenizer = AutoTokenizer.from_pretrained(EE_MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
     print("Model and tokenizer loaded")
     return model, tokenizer, device
 
@@ -104,10 +114,12 @@ def generate_summary(model, tokenizer, device, chronology_str, extracted_events,
 def main():
     args = parse_args()
     input_folder = args.inputdir
-    output_folder = args.outputdir
-    os.makedirs(output_folder, exist_ok=True)
+    model_selection = args.model
 
-    model, tokenizer, device = model_setup()
+    output_folder = f'data/DS/generated/EE/{model_selection}'
+    os.makedirs(output_folder, exist_ok=True) 
+
+    model, tokenizer, device = model_setup(model_selection)
 
     for filename in tqdm(os.listdir(input_folder)):
         if not filename.endswith('.csv'):

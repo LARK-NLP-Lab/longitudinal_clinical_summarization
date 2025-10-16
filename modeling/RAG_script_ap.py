@@ -1,8 +1,8 @@
 import torch
 import argparse
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 from tqdm import tqdm
-
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, pipeline
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -36,22 +36,27 @@ class StringLoader(BaseLoader):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--inputdir', type=str, default='RAG', help='input directory')
-    parser.add_argument('--inputdir', type=str, default='input_data', help='input directory')
-    parser.add_argument('--outputdir', type=str, default='RAG_AP_output', help='output directory')
+    parser.add_argument('--inputdir', type=str, default='data/AP/input', help='input directory')
     parser.add_argument('--method', type=int, default=-1, help='AP generation method')
     parser.add_argument('--setting', type=str, default='gt', help='Experimental setting, gt or gen')
+    parser.add_argument('--model', type=str, help='model name, choose from mistral, qwen, deepseek, llama3, llama2')
     args = parser.parse_args()
     return args
 
 
-def model_setup():
+def model_setup(model_selection: str):
     login()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('Device: ', device)
 
-    model_name = 'mistralai/Mistral-7B-Instruct-v0.1'
+    AVAILABLE_MODELS = {'mistral': 'mistralai/Mistral-7B-Instruct-v0.1',
+                        'qwen': 'Qwen/Qwen2.5-VL-7B-Instruct',
+                        'deepseek': 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B',
+                        'llama3': 'meta-llama/Llama-3.1-8B-Instruct',
+                        'llama2': 'meta-llama/Llama-2-13b-chat-hf'}
+
+    model_name = AVAILABLE_MODELS[model_selection]
 
     quantization_config = BitsAndBytesConfig(load_in_8bit=True)
 
@@ -102,11 +107,14 @@ def get_retriever(chronology_str: str):
 def main():
     args = parse_args()
     input_folder = args.inputdir
-    output_folder = args.outputdir
     method = args.method
     setting = args.setting
+    model_selection = args.model
     
-    mistral_llm = model_setup()
+    output_folder = f'data/AP/generated/RAG/{model_selection}/{setting}/{method}'
+    os.makedirs(output_folder, exist_ok=True) 
+
+    mistral_llm = model_setup(model_selection)
 
     # Create prompt template
     prompt_template = """

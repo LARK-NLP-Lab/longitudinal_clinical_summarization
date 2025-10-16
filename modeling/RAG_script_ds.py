@@ -1,8 +1,8 @@
 import torch
 import argparse
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 from tqdm import tqdm
-
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, pipeline
 
 from langchain_community.embeddings.huggingface import HuggingFaceEmbeddings
@@ -34,19 +34,16 @@ class StringLoader(BaseLoader):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inputdir', type=str, default='input_data', help='input directory')
-    parser.add_argument('--outputdir', type=str, default='RAG_output', help='output directory')
+    parser.add_argument('--inputdir', type=str, default='data/DS/input', help='input directory')
+    parser.add_argument('--model', type=str, help='model name, choose from mistral, qwen, deepseek, llama3, llama2')
     args = parser.parse_args()
     return args
 
-
-def model_setup():
+def model_setup(model_name: str):
     login()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('Device: ', device)
-
-    model_name = 'mistralai/Mistral-7B-Instruct-v0.1'
 
     quantization_config = BitsAndBytesConfig(load_in_8bit=True)
 
@@ -97,9 +94,13 @@ def get_retriever(chronology_str: str):
 def main():
     args = parse_args()
     input_folder = args.inputdir
-    output_folder = args.outputdir
-    
-    mistral_llm = model_setup()
+    model_selection = args.model
+
+    # create output dir, make sure it exists
+    output_folder = f'data/DS/generated/RAG/{model_selection}'
+    os.makedirs(output_folder, exist_ok=True) 
+
+    mistral_llm = model_setup(model_selection)
 
     # Create prompt template
     prompt_template = """
