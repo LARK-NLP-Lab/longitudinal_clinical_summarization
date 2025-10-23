@@ -11,10 +11,12 @@ We also use EHRShot, which has similar requirements and can be found here: https
 
 ## How to run
 1. Run setup.sh to filter the MIMIC-III dataset and get the relevant chronologies for the discharge summarization and assessment and plan generation tasks. Modalities and time windows for discharge summarization can be selected by modifying the arguments (--modality and --window respectively) of get_chronologies_DS.py
-2. To run generation, choose the bash script corresponding to the desired task (DS or AP) and setting (direct gen or RAG)
+2. To run generation, execute run.sh with the argument corresponding to the desired task ds | ap | rag_ds | rag_ap
 
 ## Setting up UMLS
---insert description for UMLS installation--
+As part of our evaluation metrics we calculate CUI f-score. This requires a working UMLS installation.
+Download UMLS from the NIH website: https://www.nlm.nih.gov/research/umls/implementation_resources/metamorphosys/help.html
+Then follow the instructions to install QuickUMLS https://github.com/Georgetown-IR-Lab/QuickUMLS
 
 ## Tasks
 - Discharge summarization: given a patient chronology, generate the three sections of a discharge summary (Diagnosis, Brief Hospital Course, Discharge Instructions)
