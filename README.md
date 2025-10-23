@@ -15,7 +15,11 @@ We also use EHRShot, which has similar requirements and can be found here: https
 
 ## Setting up UMLS
 As part of our evaluation metrics we calculate CUI f-score. This requires a working UMLS installation.
+
+
 Download UMLS from the NIH website: https://www.nlm.nih.gov/research/umls/implementation_resources/metamorphosys/help.html
+
+
 Then follow the instructions to install QuickUMLS https://github.com/Georgetown-IR-Lab/QuickUMLS
 
 ## Tasks
