@@ -51,16 +51,16 @@ def main():
     args = parse_args()
     sample_size = args.sample_size
 
-    target_path = 'data/MIMIC-III'
+    target_path = 'data/MIMIC-III/target'
 
     hadmids, sampled_icu = filter_icu(target_path, sample_size)
 
     try:
-        os.mkdir(f'{target_path}/filtered')
+        os.mkdir(target_path)
     except OSError:
         pass
 
-    sampled_icu.to_csv(f'{target_path}/filtered/filtered_ICUSTAYS.csv', index=False)
+    sampled_icu.to_csv(f'{target_path}/target_ICUSTAYS.csv', index=False)
 
     files = ['INPUTEVENTS_CV', 'INPUTEVENTS_MV', 'LABEVENTS', 'CHARTEVENTS', 'PRESCRIPTIONS', 'NOTEEVENTS']
     chunk_size = 10 ** 6  
@@ -70,7 +70,7 @@ def main():
         new_df = pd.DataFrame()
 
         def write_csv(data):
-            with open(f'{target_path}/filtered/filtered_{file}.csv', 'a') as outfile:
+            with open(f'{target_path}/target_{file}.csv', 'a') as outfile:
                 writer = csv.writer(outfile)
                 writer.writerow(data)
 

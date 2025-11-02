@@ -1,4 +1,3 @@
-import os
 import argparse
 import pandas as pd
 import torch
@@ -8,8 +7,6 @@ from huggingface_hub import login
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
-
-torch.cuda.set_device(0)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -61,7 +58,6 @@ def df2chron_str(df: pd.DataFrame):
 def main():
     args = parse_args()
     input_folder = args.inputdir
-    output_folder = args.outputdir
     method = args.method
     setting = args.setting
     model_selection = args.model
