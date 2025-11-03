@@ -26,3 +26,21 @@ Then follow the instructions to install QuickUMLS https://github.com/Georgetown-
 - Discharge summarization: given a patient chronology, generate the three sections of a discharge summary (Diagnosis, Brief Hospital Course, Discharge Instructions)
 - A&P generation: given a patient chronology and previous progress notes, generate the Assessment and Plan sections of the current day's progress note
 - EHRSHot diagnosis prediction: given patient data, determine whether they will develop the given diagnosis within one year post-discharge.
+
+## Citation
+If you use our work in your research, please cite the following paper:
+
+```bibtex
+@misc{kruse2025largelanguagemodelstemporal,
+      title={Large Language Models with Temporal Reasoning for Longitudinal Clinical Summarization and Prediction}, 
+      author={Maya Kruse and Shiyue Hu and Nicholas Derby and Yifu Wu and Samantha Stonbraker and Bingsheng Yao and Dakuo Wang and Elizabeth Goldberg and Yanjun Gao},
+      year={2025},
+      eprint={2501.18724},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2501.18724}, 
+}
+```
+
+## Acknowledgement
+This work is supported by National Library of Medicine R00 LM014308
