@@ -2,7 +2,7 @@
 ## Overview
 This repository contains code for the paper 'Large Language Models with Temporal Reasoning for Longitudinal Clinical Summarization and Prediction'
 
-Link: https://arxiv.org/abs/2501.18724
+Link: https://aclanthology.org/2025.findings-emnlp.1128/
 
 ## Data
 We use the MIMIC-III dataset for this paper, which is available on PhysioNet: https://physionet.org/content/mimiciii/1.4/. To access the data, a credentialed PhysioNet account, CITI training and a data use agreement is required. For this reason the data cannot be included within this repository.
