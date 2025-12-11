@@ -220,10 +220,11 @@ def get_notes(hadmid: int, notes: pd.DataFrame) -> tuple[pd.DataFrame, str]:
     patient_notes = notes[notes['HADM_ID'] == int(hadmid)]
     discharge = patient_notes[patient_notes['CATEGORY'] == 'Discharge summary']
     if discharge.empty:
-        print(f'{hadmid} has not discharge summary')                #very rare
+        print(f'{hadmid} has no discharge summary')                #very rare
+        return notes_tl, None
     else:
         discharge_txt = patient_notes[patient_notes['CATEGORY'] == 'Discharge summary']['TEXT'].values[0]
-    return notes_tl, discharge_txt
+        return notes_tl, discharge_txt
 
 
 def get_rel_times(df):
